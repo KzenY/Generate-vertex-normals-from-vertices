@@ -1,0 +1,42 @@
+    QVector3D V3D;
+    QTextStream modelfileTextStream(&modelFile);
+    while(!modelfileTextStream.atEnd()){
+        QString line = modelfileTextStream.readLine();
+        // 读取obj文件
+        if(line.startsWith("v "))
+        {
+            QStringList lineList = line.split(" ");
+            V3D.setX( lineList[2].toFloat() );
+            V3D.setY( lineList[3].toFloat() );
+            V3D.setZ( lineList[4].toFloat() );
+            vertices.push_back(V3D);
+            //初始化
+            QVector3D zero;
+            zero.setX(0);
+            zero.setY(0);
+            zero.setZ(0);
+            normals.push_back(zero);
+        }
+        else if(line.startsWith("f"))
+        {
+            QStringList lineList = line.split(" ");
+            for(int i = 1; i <= 3; i++)
+            {
+                indices.push_back(lineList[i].toInt()-1);
+           }
+            QVector3D v1=vertices[indices[indices.size()-3]];
+            QVector3D v2=vertices[indices[indices.size()-2]];
+            QVector3D v3=vertices[indices[indices.size()-1]];
+            QVector3D vn1=QVector3D::crossProduct(v2-v1,v3-v1);
+            QVector3D vn2=QVector3D::crossProduct(v3-v2,v1-v2);
+            QVector3D vn3=QVector3D::crossProduct(v1-v3,v2-v3);
+            //加和
+            normals[indices[indices.size()-3]]+=vn1;
+            normals[indices[indices.size()-2]]+=vn2;
+            normals[indices[indices.size()-1]]+=vn3;
+            //归一化
+            normals[indices[indices.size()-3]].normalize();
+            normals[indices[indices.size()-2]].normalize();
+            normals[indices[indices.size()-1]].normalize();
+        }
+    }
